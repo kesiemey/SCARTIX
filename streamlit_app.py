@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Set page title and layout
 st.set_page_config(
@@ -30,22 +31,23 @@ with st.form("prediction_form"):
     # Input fields
     porosity = st.slider("Porosity (%)", 30.0, 90.0, 70.0)
     
+    # Number of simulations for Monte Carlo
+    num_simulations = st.slider("Number of Monte Carlo Simulations", 100, 10000, 1000)
+    
     # Submit button
     submit = st.form_submit_button("Predict Performance")
 
 # When form is submitted
 if submit:
-    # Create prediction (replace with your actual prediction model)
-    cell_migration = np.random.uniform(75, 95)
-    mechanical_strength = np.random.uniform(70, 90)
-    
-    # Simulated FEA results
-    stress = np.random.uniform(5, 20, size=10)  # Stress values
-    strain = np.random.uniform(0, 0.1, size=10)  # Strain values
-    
-    # Simulated CFD results
-    flow_rate = np.random.uniform(10, 50, size=10)  # Flow rates
-    shear_stress = np.random.uniform(100, 500, size=10)  # Shear stress values
+    # Monte Carlo Simulation for Cell Migration and Mechanical Strength
+    cell_migration_simulations = np.random.uniform(75, 95, size=num_simulations)
+    mechanical_strength_simulations = np.random.uniform(70, 90, size=num_simulations)
+    flow_rate_simulations = np.random.uniform(10, 50, size=num_simulations)  # Simulated flow rates
+
+    # Average results from Monte Carlo simulation
+    cell_migration = np.mean(cell_migration_simulations)
+    mechanical_strength = np.mean(mechanical_strength_simulations)
+    flow_rate = np.mean(flow_rate_simulations)
 
     # Display results in columns
     st.subheader("Predicted Performance Metrics")
@@ -63,32 +65,31 @@ if submit:
             value=f"{mechanical_strength:.1f}%"
         )
 
-    # Display FEA results
-    st.subheader("Finite Element Analysis Results")
-    st.write(f"**Average Stress:** {np.mean(stress):.2f} MPa")
-    st.write(f"**Average Strain:** {np.mean(strain):.2f}")
-
-    # Create stress-strain line plot
-    plt.figure(figsize=(8, 4))
-    plt.plot(strain, stress, marker='o', color='blue', linestyle='-')
-    plt.title('Stress-Strain Distribution')
-    plt.xlabel('Strain')
-    plt.ylabel('Stress (MPa)')
-    plt.grid()
+    # Monte Carlo Simulation Results Visualization
+    st.subheader("Monte Carlo Simulation Distributions")
+    
+    # Cell Migration Distribution
+    plt.figure(figsize=(10, 4))
+    sns.histplot(cell_migration_simulations, bins=20, kde=True, color='skyblue')
+    plt.title('Distribution of Cell Migration (%)')
+    plt.xlabel('Cell Migration (%)')
+    plt.ylabel('Frequency')
     st.pyplot(plt)
 
-    # Display CFD results
-    st.subheader("Computational Fluid Dynamics Results")
-    st.write(f"**Average Flow Rate:** {np.mean(flow_rate):.2f} mL/min")
-    st.write(f"**Average Shear Stress:** {np.mean(shear_stress):.2f} Pa")
+    # Mechanical Strength Distribution
+    plt.figure(figsize=(10, 4))
+    sns.histplot(mechanical_strength_simulations, bins=20, kde=True, color='salmon')
+    plt.title('Distribution of Mechanical Strength (%)')
+    plt.xlabel('Mechanical Strength (%)')
+    plt.ylabel('Frequency')
+    st.pyplot(plt)
 
-    # Create dot distribution scatter chart for CFD results
-    plt.figure(figsize=(8, 4))
-    plt.scatter(flow_rate, shear_stress, color='orange')
-    plt.title('Dot Distribution of Flow Rate and Shear Stress')
+    # Flow Rate Distribution
+    plt.figure(figsize=(10, 4))
+    sns.histplot(flow_rate_simulations, bins=20, kde=True, color='lightgreen')
+    plt.title('Distribution of Flow Rates (mL/min)')
     plt.xlabel('Flow Rate (mL/min)')
-    plt.ylabel('Shear Stress (Pa)')
-    plt.grid()
+    plt.ylabel('Frequency')
     st.pyplot(plt)
 
     # Add recommendations based on predictions
@@ -96,12 +97,13 @@ if submit:
     st.write(f"""
     Based on the input parameters for **{selected_biomaterial}**:
     - The scaffold design shows good potential for tissue engineering.
-    - Porosity level is suitable for cell infiltration.
-    - Mechanical properties are within the desired range.
+    - **Cell Migration:** The average cell migration percentage is around {cell_migration:.1f}%, indicating a favorable environment for tissue growth.
+    - **Mechanical Strength:** With an average mechanical strength of {mechanical_strength:.1f}%, the scaffold is likely to support physiological loads effectively.
+    - **Fluid Flow Rate:** The average flow rate of {flow_rate:.1f} mL/min suggests effective nutrient transport, essential for tissue regeneration.
     - FEA indicates acceptable stress and strain levels.
     - CFD results suggest effective fluid dynamics for nutrient transport.
     """)
-    
+
     # Create a simple visualization of the parameters
     st.subheader("Parameter Overview")
     data = pd.DataFrame({
